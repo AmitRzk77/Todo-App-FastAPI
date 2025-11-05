@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  # 🐘 PostgreSQL Database
+  
   db:
     image: postgres:15
     restart: always
@@ -14,7 +14,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # 🔥 FastAPI Application
+  
   web:
     build: .
     container_name: todo-web
@@ -31,13 +31,13 @@ services:
     volumes:
       - .:/app
 
-  # 🧠 Redis (Celery broker, internal only)
+  
   redis:
     image: redis:latest
     container_name: todo-redis
     # no ports exposed → internal communication only
 
-  # ⚙️ Celery Worker
+  
   worker:
     build: .
     container_name: todo-worker
@@ -52,7 +52,7 @@ services:
     volumes:
       - .:/app
 
-  # 🌼 (Optional) Celery Dashboard
+  #not used yet pxi use hunskxa
   flower:
     build: .
     container_name: todo-flower

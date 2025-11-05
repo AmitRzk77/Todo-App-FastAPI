@@ -1,6 +1,6 @@
 from celery import Celery
 
-# Configure Celery
+
 celery = Celery(
     "todo_tasks",
     broker="redis://localhost:6379/0",  

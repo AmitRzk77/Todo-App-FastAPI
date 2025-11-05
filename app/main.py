@@ -5,7 +5,6 @@ from .routes import router as tasks_router
 
 app = FastAPI(title="ToDo App - FastAPI + Postgres")
 
-# create DB tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
 app.include_router(tasks_router)

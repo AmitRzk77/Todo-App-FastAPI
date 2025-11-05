@@ -49,7 +49,7 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_task)
 
-    # Trigger Celery background job
+
     notify_task_created.delay(db_task.id, db_task.title)
 
     return db_task

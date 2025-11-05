@@ -12,7 +12,7 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"@{os.getenv('POSTGRES_HOST', 'db')}:{os.getenv('POSTGRES_PORT', 5432)}/{os.getenv('todo_db')}"
 )
 
-# Retry logic: try connecting to DB up to 10 times
+
 for attempt in range(10):
     try:
         engine = create_engine(DATABASE_URL, echo=False, future=True)
