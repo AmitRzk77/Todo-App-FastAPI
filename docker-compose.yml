@@ -1,4 +1,7 @@
+version: "3.9"
+
 services:
+  # 🐘 PostgreSQL Database
   db:
     image: postgres:15
     restart: always
@@ -11,6 +14,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  # 🔥 FastAPI Application
   web:
     build: .
     container_name: todo-web
@@ -19,8 +23,47 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://todo_user:todo_pass@db:5432/todo_db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
     depends_on:
       - db
+      - redis
+    volumes:
+      - .:/app
+
+  # 🧠 Redis (Celery broker, internal only)
+  redis:
+    image: redis:latest
+    container_name: todo-redis
+    # no ports exposed → internal communication only
+
+  # ⚙️ Celery Worker
+  worker:
+    build: .
+    container_name: todo-worker
+    command: celery -A app.celery_app.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      DATABASE_URL: postgresql://todo_user:todo_pass@db:5432/todo_db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+
+  # 🌼 (Optional) Celery Dashboard
+  flower:
+    build: .
+    container_name: todo-flower
+    command: celery -A app.celery_app.celery flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
 
 volumes:
   pgdata:

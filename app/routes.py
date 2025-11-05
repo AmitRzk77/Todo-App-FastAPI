@@ -4,6 +4,8 @@ from typing import List
 
 from . import schemas, crud
 from .db import get_db
+from . import models, schemas
+from app.celery_app import notify_task_created
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -36,3 +38,18 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task not found")
     crud.delete_task(db, db_task)
     return None
+
+
+router = APIRouter()
+
+@router.post("/tasks", response_model=schemas.Task)
+def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
+    db_task = models.Task(**task.dict())
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+
+    # Trigger Celery background job
+    notify_task_created.delay(db_task.id, db_task.title)
+
+    return db_task
